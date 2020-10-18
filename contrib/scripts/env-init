@@ -1,0 +1,263 @@
+#!/usr/bin/env bash
+
+# `env-init` is a bash script that helps with initializing lxd based recording environment
+set -o errtrace
+set -o functrace
+set -o errexit
+set -o nounset
+set -o pipefail
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
+readonly SCRIPT_NAME="$(basename "$0")"
+function print_usage {
+  echo
+  echo "Usage: ${SCRIPT_NAME} [OPTIONS]"
+  echo
+  echo "setup an lxd based recording environment."
+  echo
+  echo "Options:"
+  echo
+  echo -e "  --lxd-init\t\tinstalls and initializes LXD/LXC."
+  echo -e "  --container-init\tcreates and provisions minimal debian buster LXD container."
+  echo -e "  --recording-init\tinstalls recording tools in lxd container."
+  echo
+  echo "[NOTE]: only one of '--container-init' or '--recording-init' flags can be present in a single run."
+  echo
+  echo "Examples:"
+  echo
+  echo "  ${0} --lxd-init --container-init 'recording-environment'"
+  echo "  ${0} --container-init 'recording-environment'"
+  echo "  ${0} --recording-init 'recording-environment'"
+}
+
+function log {
+  local -r level="$1"
+  local -r message="$2"
+  local -r timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
+}
+
+function log_info {
+  local -r message="$1"
+  log "INFO" "$message"
+}
+
+function log_warn {
+  local -r message="$1"
+  log "WARN" "$message"
+}
+
+function log_error {
+  local -r message="$1"
+  log "ERROR" "$message"
+}
+
+function command_exists {
+  local -r command_name="$1"
+  [[ -n "$(command -v $command_name)" ]]
+}
+
+function assert_not_empty {
+  local -r arg_name="$1"
+  local -r arg_value="$2"
+
+  if [[ -z "$arg_value" ]]; then
+    log_error "The value for '$arg_name' cannot be empty"
+    print_usage
+    exit 1
+  fi
+}
+function lxd_init {
+  log_info "initializing lxd"
+  log_info "installing snap core package"
+  sudo snap install core
+  log_info "installing lxd package"
+  sudo snap install lxd
+  log_info "making symlinks for lxd in /usr/local/bin"
+  sudo ln -s /snap/bin/lxd /usr/local/bin/lxd
+  log_info "making symlinks for lxc in /usr/local/bin"
+  sudo ln -s /snap/bin/lxc /usr/local/bin/lxc
+  log_info "making sure lxd is in path by calling --version"
+  lxd --version
+  log_info "making sure lxc is in path --version"
+  lxc --version
+  log_info "ensure '$USER' belongs to lxd group"
+  getent group lxd > /dev/null || sudo groupadd lxd
+  sudo usermod --append --groups lxd "$USER"
+  log_info "initializing lxd"
+  cat <<EOF | sudo lxd init --preseed
+config: {}
+networks:
+- config:
+    ipv4.address: auto
+    ipv6.address: auto
+  description: ""
+  name: lxdbr0
+  type: ""
+storage_pools:
+- config:
+    size: 30GB
+  description: ""
+  name: default
+  driver: btrfs
+profiles:
+- config: {}
+  description: ""
+  devices:
+    eth0:
+      name: eth0
+      network: lxdbr0
+      type: nic
+    root:
+      path: /
+      pool: default
+      type: disk
+  name: default
+cluster: null
+EOF
+  log_info "ensuring lxd is running without any issues by pulling 'debian/buster' image"
+  newgrp lxd <<EOF
+lxc launch images:debian/buster
+EOF
+}
+function container_init {
+  local -r container_name="$1"
+  if [[ -z "$container_name" ]]; then
+    log_error "The value for '$container_name' cannot be empty"
+    exit 1
+  fi
+  local -r username="$USER";
+  log_info "launching/starting container '$container_name'"
+  lxc launch images:debian/buster "${container_name}" -c security.privileged=true -c security.nesting=true || lxc start "${container_name}" 
+  log_info "installing base pacakges (with docker) and configuring ssh access for ${container_name}"
+cat << EOF | lxc exec "${container_name}" -- bash --
+apt-get update && \
+apt-get install -yq sudo apt-utils openssh-server curl && \
+sed -i '/.*PasswordAuthentication.*/d' /etc/ssh/sshd_config && \
+echo 'PasswordAuthentication yes' | tee -a /etc/ssh/sshd_config && \
+systemctl restart ssh sshd && \
+systemctl status ssh sshd && \
+useradd -l -G sudo -md /home/${username} -s /bin/bash ${username} && \
+echo "${username}:${username}" | chpasswd && \
+sed -i.bak -e 's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' /etc/sudoers && \
+curl -fsSL https://raw.githubusercontent.com/da-moon/core-utils/master/bin/fast-apt | bash -s -- --init || true && \
+curl -fsSL https://raw.githubusercontent.com/da-moon/core-utils/master/bin/get-docker | bash -s -- --user ${username} || true
+EOF
+  log_info "adding local machine's ssh key to '${container_name}'"
+ssh-keygen -f "${HOME}/.ssh/known_hosts" -R "$(lxc list --format json | jq -r ".[] | select((.name==\"${container_name}\") and (.status==\"Running\"))" | jq -r '.state.network.eth0.addresses' | jq -r '.[] | select(.family=="inet").address')"
+echo "${username}" | sshpass ssh-copy-id -o StrictHostKeyChecking=no -f "${username}@$(lxc list --format json | jq -r ".[] | select((.name==\"${container_name}\") and (.status==\"Running\"))" | jq -r '.state.network.eth0.addresses' | jq -r '.[] | select(.family=="inet").address')";
+}
+function python_init {
+  local -r container_name="$1"
+  if [[ -z "$container_name" ]]; then
+    log_error "The value for '$container_name' cannot be empty"
+    exit 1
+  fi
+  local -r username="$USER";
+  log_info "install python and configuring it for use by user '$username'"
+cat << EOF | lxc exec "${container_name}" -- bash
+export DEBIAN_FRONTEND=noninteractive; \
+apt-get update && apt-get install -yq python python3 python3-pip python-pip && \
+mkdir -p /home/${username}/.local/bin && \
+echo 'export PATH=\$PATH:~/.local/bin' >> /home/${username}/.profile && \
+chown "${username}:${username}" /home/${username}/ -R
+EOF
+}
+
+function ruby_init {
+  local -r container_name="$1"
+  if [[ -z "$container_name" ]]; then
+    log_error "The value for '$container_name' cannot be empty"
+    exit 1
+  fi
+  local -r username="$USER";
+  log_info "install ruby and configuring it for use by user '$username'"
+cat << EOF | lxc exec "${container_name}" -- bash
+export DEBIAN_FRONTEND=noninteractive; \
+apt-get update && apt-get install -yq ruby ruby-dev gcc && \
+mkdir -p /home/${username}/.gem/bin && \
+echo 'export PATH=\$PATH:~/.gem/bin' >> /home/${username}/.profile && \
+echo 'export GEM_HOME=\$HOME/.gem' >> /home/${username}/.profile && \
+chown "${username}:${username}" /home/${username}/ -R
+EOF
+}
+function recording_init {
+  local -r container_name="$1"
+  if [[ -z "$container_name" ]]; then
+    log_error "The value for '$container_name' cannot be empty"
+    exit 1
+  fi
+  local -r username="$USER";
+  log_info "install base packages for 'asciinema' and 'spielbash'"
+cat << EOF | lxc exec "${container_name}" -- bash
+export DEBIAN_FRONTEND=noninteractive; \
+apt-get update && apt-get install -yq tmux xterm procps
+EOF
+  log_info "installing 'asciinema'"
+  cat << EOF | ssh -t "${username}@$(lxc list --format json | jq -r ".[] | select((.name==\"${container_name}\") and (.status==\"Running\"))" | jq -r '.state.network.eth0.addresses' | jq -r '.[] | select(.family=="inet").address')" --
+python3 -m pip install asciinema
+asciinema --version
+EOF
+  log_info "building and installing 'spielbash'"
+cat << EOF | ssh -t "${username}@$(lxc list --format json | jq -r ".[] | select((.name==\"${container_name}\") and (.status==\"Running\"))" | jq -r '.state.network.eth0.addresses' | jq -r '.[] | select(.family=="inet").address')" --
+gem install spielbash
+spielbash --help
+EOF
+
+}
+
+function main {
+  local lxd_init_run=false 
+  local container_init_run=false
+  local recording_init_run=false
+  local container_name
+  while [[ $# > 0 ]]; do
+    local key="$1"
+
+    case "$key" in
+      --lxd-init)
+        lxd_init_run=true
+        ;;
+      --container-init)
+        container_init_run=true
+        container_name="$2"
+        assert_not_empty "--container-init" "$container_name"
+        shift
+        ;;
+      --recording-init)
+        recording_init_run=true
+        container_name="$2"
+        assert_not_empty "--recording-init" "$container_name"
+        shift
+        ;;
+      --help)
+        print_usage
+        exit
+        ;;
+      *)
+        log_error "Unrecognized argument: $key"
+        print_usage
+        exit 1
+        ;;
+    esac
+    shift
+  done
+  if "$container_init_run" && "$recording_init_run" ; then
+    log_error "only one of '--container-init' or '--recording-init' flags can be present in a single run"
+    print_usage
+    exit 1
+  fi 
+  if "$lxd_init_run" ; then
+    lxd_init
+  fi
+  if "$container_init_run"; then
+    container_init "$container_name"
+  elif "$recording_init_run"; then
+    log_info "making sure container '$container_name' has already started"
+    lxc start "${container_name}" || true
+    python_init "$container_name"
+    ruby_init "$container_name"
+    recording_init "$container_name"
+  fi
+}
+main "$@"

@@ -1,0 +1,336 @@
+#!/usr/bin/env bash
+
+
+# `spielbash-gen` is a bash script that reads a text file and 
+# generates corresponding `spielbash` instruction `script` YAML 
+# file. 
+# 
+# ----- sed -i '/^\s*\- message: ""/,/^\s*\-/{/^\s*\-s/!d}' 01-git-configuration.yml ------
+# 
+set -o errtrace
+set -o functrace
+set -o errexit
+set -o nounset
+set -o pipefail
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
+readonly SCRIPT_NAME="$(basename "$0")"
+readonly SECTION_PAUSE="5"
+readonly TERMINAL_PAUSE="3"
+readonly VANISHING_MSG_PAUSE="4"
+function print_usage {
+  echo
+  echo "Usage: ${SCRIPT_NAME} [OPTIONS]"
+  echo
+  echo "convert a plaing text file into spielbash messages."
+  echo
+  echo "Options:"
+  echo
+  echo -e "  -i\tinput text file. Required."
+  echo -e "  -o\tlocation to store correponding '.yml' file. Optional."
+  echo -e "  -c\tonly generates instruction for what's encapsulated within"
+  echo -e "  \t### terminal ### ... ### end ###. Optional."
+  echo
+  echo "Example:"
+  echo
+  echo "  ${0} -i docs/README.md -o scenes/README.yml"
+}
+
+function log {
+  local -r level="$1"
+  local -r message="$2"
+  local -r timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  >&2 echo -e "${timestamp} [${level}] [$SCRIPT_NAME] ${message}"
+}
+
+function log_info {
+  local -r message="$1"
+  log "INFO" "$message"
+}
+
+function log_warn {
+  local -r message="$1"
+  log "WARN" "$message"
+}
+
+function log_error {
+  local -r message="$1"
+  log "ERROR" "$message"
+}
+
+function command_exists {
+  local -r command_name="$1"
+  [[ -n "$(command -v $command_name)" ]]
+}
+function parse_terminal_block  {
+  local -r line="$1"
+  local -r output="$2"
+}
+function generate  {
+  local -r input="$1"
+  local -r output="$2"
+  local -r code_block="$3"
+  local -r OLD_IFS="$IFS"
+
+if [[ code_block ]];then
+  local -r output_dir=$(dirname ${output})
+  local -r input_dir=$(dirname ${input})
+  log_info "generating spielbash script from ${input} and storing it under ${output_dir}"
+  [[ -d "${output_dir}" ]] && log_warn "'${output_dir}' directory exists. removing codeblock files..."; rm -f "$output_dir/"*.codeblock
+pushd "$input_dir"
+
+awk -v RS="### terminal ###" "NR>1{sub(/### end ###.*/,\"### end ###\"); print RS\$0>\"${output_dir}/\"NR-1\".codeblock\"}" "$(basename $input)" 
+popd
+pushd "$output_dir"
+log_info "reading codeblocks"
+sed -i '/### terminal ###/d' *.codeblock
+sed -i '/### end ###/d' *.codeblock
+local codeblock_files=($(find . -mindepth 1 -maxdepth 1 -type f -name "*.codeblock"))
+for codeblock in "${codeblock_files[@]}";do
+    echo "${output_dir}/$(echo $(basename $codeblock) | sed 's/\..*$//g')"
+    target="${output_dir}/$(echo $(basename $codeblock) | sed 's/\..*$//g').yml"
+  IFS='';
+    cat <<-EOF > "$target"
+---
+
+title: "$(echo $input_dir/$(echo $(basename $codeblock) | sed 's/\..*$//g') |sed 's/[\.\/]/_/g')"
+options:
+  width: 80
+  height: 24
+  wait: true
+  typing_delay_s: 0.07
+  reading_delay_s: 0.12
+pre-run:
+  - new_env: "docker run --rm -it -v $PWD:/src:z --workdir /src --name screencasts screencasts:latest bash"
+    wait_check_cmd: "docker exec phony pgrep -P 1"
+  - command: clear
+post-run:
+  - delete_env: "exit"
+  - pause: 3
+scenes:
+  - command: neofetch
+  - pause: $SECTION_PAUSE
+EOF
+while read line;do 
+  if grep -qE "# => " <<< "$line" ;then
+  cat <<-EOF >> "${target}"
+  - message: "$(echo "$line" | sed 's/# => //g' | sed 's/\t/  /g' | sed "s/\"/\\\\\"/g")"
+    options:
+      delete: true
+      reading_delay_s: $VANISHING_MSG_PAUSE
+EOF
+elif [[ -z "${line}" ]]; then
+  cat <<-EOF >> "${target}"
+  - key: "Enter"
+EOF
+else
+    cat <<-EOF >> "${target}"
+  - command: "$(echo "$line" | sed "s/\"/\\\\\"/g" | sed 's/\t/  /g')"
+    options:
+      reading_delay_s: $TERMINAL_PAUSE
+EOF
+fi
+# IFS="$OLDIFS"
+
+done < "$codeblock"
+  cat <<-EOF >> "${target}"
+  - command : exit
+  - pause: 10
+EOF
+rm "$codeblock"
+done
+popd
+
+
+else
+  log_info "generating spielbash script from ${input} and storing it at ${output}"
+  [[ -f "${output}" ]] && log_warn "'${output}' exists. removing ..."; rm -f "$output"
+  IFS='';
+
+cat <<-EOF >> "${output}"
+---
+
+title: "$(echo $input | sed 's/[\.\/]/_/g')"
+options:
+  width: 80
+  height: 24
+  wait: true
+  typing_delay_s: 0.07
+  reading_delay_s: 0.12
+pre-run:
+  - new_env: "docker run --rm -it -v $PWD:/src:z --workdir /src --name screencasts screencasts:latest bash"
+    wait_check_cmd: "docker exec phony pgrep -P 1"
+  - command: clear
+post-run:
+  - delete_env: "exit"
+  - pause: 3
+scenes:
+  - command: neofetch
+  - pause: $SECTION_PAUSE
+  - command: sudo chown -R "$USER" /src/playground
+  - command: vim
+  - key : "Escape"
+  - command : ":NeoComplCacheEnable"
+    options:
+      typing_delay_s: 0.001
+  - command : ":NeoComplCacheDisable"
+    options:
+      typing_delay_s: 0.001
+  - command : ":set showcmd"
+    options:
+      typing_delay_s: 0.001
+  - command : ":setl noai nocin nosi inde=  "
+    options:
+      typing_delay_s: 0.001
+  - command : ":set shell=/bin/bash"
+    options:
+      typing_delay_s: 0.001
+  - command : ":AutoCloseOff"
+    options:
+      typing_delay_s: 0.001
+  - key: "i"
+EOF
+total_lines=$(($(sed -n '$=' "$input")));
+current_line_number=1;
+while [[ "$current_line_number" -le "$total_lines" ]];do 
+  line=$(sed -n "${current_line_number}"p "$input" | sed 's/\t/  /g'); 
+  if grep -q "### terminal ###" <<< "$line" ;then 
+  cat <<-EOF >> "${output}"
+  - key : "Escape"
+  - command : ":below terminal" 
+  - pause: $SECTION_PAUSE
+EOF
+    # parse block
+     end_block_number=$(sed -n  "$current_line_number",'${/### end ###/{=;q;}}' $input);
+  block_start=$(( $current_line_number + 1 ))
+  block_end=$(( $end_block_number -1 ))
+   for ((block_start; block_start<=block_end; block_start++)); do
+    line=$(sed -n "$block_start p" "$input" | sed 's/\t/  /g');
+  if grep -qE "^#" <<< "$line" ;then
+  cat <<-EOF >> "${output}"
+  - message: "$(echo "$line" | sed 's/^#//g' | sed 's/\t/  /g' )"
+    options:
+      delete: true
+      reading_delay_s: $VANISHING_MSG_PAUSE
+EOF
+elif [[ -z "${line}" ]]; then
+  cat <<-EOF >> "${output}"
+  - key: "Enter"
+EOF
+else
+    cat <<-EOF >> "${output}"
+  - command: '$line' 
+    options:
+      reading_delay_s: $TERMINAL_PAUSE
+EOF
+fi
+done
+    # enf parse block
+     cat <<-EOF >> "${output}"
+  - key : "Escape"
+  - key : "C-\\\\"
+  - key : "C-n"
+  - command: ":q!"
+EOF
+     current_line_number=$(( $block_end + 1 )); 
+  else 
+    current_line_number=$(( $current_line_number + 1 )); 
+
+if [[ $line == *"# => "* ]]; then
+    cat <<-EOF >> "${output}"
+  - pause: $SECTION_PAUSE
+	EOF
+    fi
+    # TODO comment out unless verbose
+    # echo "$(echo "$line" | sed 's/\t/  /g' )"
+  if [ -z "${line}" ]; then
+  cat <<-EOF >> "${output}"
+  - key: "Escape"
+  - key: "i"
+  - key: "Enter"
+EOF
+elif grep -qE "^# => " <<< "$line" ;then
+  cat <<-EOF >> "${output}"
+  - key: "Escape"
+  - key: "i"
+  - message: "$(echo "$line" | sed 's/^#//g' | sed 's/\t/  /g' )"
+    options:
+      delete: true
+      reading_delay_s: $VANISHING_MSG_PAUSE
+EOF
+else
+    cat <<-EOF >> "${output}"
+  - message: "$(echo "$line" | sed 's/\t/  /g' )"
+    options:
+      delete: false
+  - key: "Enter"
+	EOF
+  fi 
+fi
+    
+done
+cat <<-EOF >> "${output}"
+  - message: "closing vim"
+    options:
+      delete: true
+  - key: "Escape"
+  - command: ":q!"
+  - command : exit
+  - command : exit
+  - pause: $SECTION_PAUSE
+EOF
+fi
+  # IFS="$OLDIFS"
+}
+
+function assert_not_empty {
+  local -r arg_name="$1"
+  local -r arg_value="$2"
+
+  if [[ -z "$arg_value" ]]; then
+    log_error "The value for '$arg_name' cannot be empty"
+    print_usage
+    exit 1
+  fi
+}
+
+function main {
+  local input
+  local output
+  local code_block=false
+  while [[ $# > 0 ]]; do
+    local key="$1"
+
+    case "$key" in
+      -i)
+        input="$2"
+        output="$(echo "$input" | cut -f 1 -d '.').yml"
+        shift
+        ;;
+      -o)
+        output="$2"
+        shift
+        ;;
+      -c)
+        code_block=true
+        # shift
+        ;;
+      --help)
+        print_usage
+        exit
+        ;;
+      *)
+        log_error "Unrecognized argument: $key"
+        print_usage
+        exit 1
+        ;;
+    esac
+
+    shift
+  done
+
+  assert_not_empty "-i" "$input"
+  assert_not_empty "-o" "$output"
+  generate "$input" "$output" "$code_block"
+}
+main "$@"

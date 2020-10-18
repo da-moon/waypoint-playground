@@ -1,0 +1,91 @@
+---
+# https://stackoverflow.com/questions/19313807/tmux-send-keys-syntax
+
+title: python sample - markdown
+options:
+  width: 80
+  height: 24
+  wait: true
+  typing_delay_s: 0.07
+  reading_delay_s: 1
+pre-run:
+  - new_env: "docker run --rm -it -v $PWD:/src:z --workdir /src --name screencasts screencasts:latest bash"
+    wait_check_cmd: "docker exec phony pgrep -P 1"
+  - command: clear
+post-run:
+  - delete_env: "exit"
+  - pause: 3
+scenes:
+  - command: neofetch
+  - message: "Tutorial One : sample python tutorial"
+#  - message: | 
+#      I'm baby iceland succulents raclette pinterest tilde single-origin \n
+#      coffee shaman mlkshk flannel literally kombucha pok pok readymade intelligentsia. \n
+#      Crucifix yuccie vexillologist kinfolk bicycle rights trust fund viral shoreditch \n
+#      kitsch keytar coloring book raw denim YOLO letterpress poutine. Migas helvetica +1,\
+#      kombucha godard sustainable butcher. Hammock meh cold-pressed irony slow-carb,\
+#      normcore VHS DIY la croix kombucha shoreditch glossier affogato helvetica tbh.\
+#      Actually fanny pack palo santo, jean shorts lumbersexual twee forage pug meditation \
+#      vegan beard freegan four loko unicorn.
+#      Vinyl selfies gochujang hell of heirloom drinking vinegar. Lumbersexual post-ironic art \
+#      party enamel pin shoreditch lo-fi cloud bread selvage echo park hashtag lomo cred drinking \
+#      vinegar crucifix. Fixie sustainable tousled selfies, try-hard venmo shabby chic gochujang tote \
+#      bag mustache pug organic irony normcore selvage. Sartorial subway tile glossier vice yuccie venmo.
+
+  - pause: 5
+  - message: vim
+    options:
+      delete: false
+  - key: "Enter"
+  - key: "i"
+  - message: "In this section, we will cover python syntax."
+    options:
+      delete: false
+  - key: "Enter"
+  
+  - message: "We start by covering variables"
+    options:
+      delete: false
+  - key: "Enter"
+
+  - message: "a variable"
+    options:
+      delete: false
+  - key: "Enter"
+  - key: "Escape"
+  - command: \:q!
+  - key: "Enter"
+  - message: Now, lets open python3 shell to practice what we just learned.
+  - message: we are going to use the shell only in this screencast.
+  - message: in the following tutorials, we will use vim's native pane terminal .
+  - command: python3
+    options:
+      wait: false
+  - message: print("python3")
+    options:
+      delete: false
+  - key: "Enter"
+  - message: print("this is some command")
+    options:
+      delete: false
+  - key: "Enter"
+  
+  - message: exit()
+    options:
+      delete: false
+  - key: "Enter"
+  - message: vim
+    options:
+      delete: false
+  - key: "Enter"
+  - key : "Escape"
+  - command : \:vert term 
+  - key : "Enter"
+  - key: C-w
+  - key: C-w
+  - message: blah blah
+  - key: "Escape"
+  - command: \:q!
+  - command : exit
+  - command : exit
+  - pause: 5
