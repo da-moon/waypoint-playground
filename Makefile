@@ -67,10 +67,10 @@ PDF_TARGETS :=$(sort $(subst /,_,$(patsubst $(DOCS_ROOT)/%.md,pdf_%,$(MARKDOWNS)
 SNAP := $(shell command -v snap 2> /dev/null)
 SSH_PASS := $(shell command -v sshpass 2> /dev/null)
 JQ := $(shell command -v jq 2> /dev/null)
-LXD := $(shell command -v lxd 2> /dev/null)
+LXC := $(shell command -v lxc 2> /dev/null)
 
 all:
-ifndef LXD
+ifndef LXC
 ifndef SNAP
     $(error "'snap' is not available. please install snap package manager before continuing.")
 endif
@@ -85,7 +85,7 @@ endif
 .SILENT:init
 init:	
 	- chmod +x contrib/scripts/env-init
-ifndef LXD
+ifndef LXC
 	- contrib/scripts/env-init --lxd-init
 endif
 	- contrib/scripts/env-init --container-init '$(CONTAINER_NAME)'
