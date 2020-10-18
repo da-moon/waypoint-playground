@@ -128,7 +128,7 @@ function container_init {
   fi
   local -r username="$USER";
   log_info "launching/starting container '$container_name'"
-  lxc launch images:debian/buster "${container_name}" -c security.privileged=true -c security.nesting=true || lxc start "${container_name}" 
+  lxc launch images:debian/buster "${container_name}" || lxc start "${container_name}" 
   log_info "installing base pacakges (with docker) and configuring ssh access for ${container_name}"
 cat << EOF | lxc exec "${container_name}" -- bash --
 apt-get update && \
