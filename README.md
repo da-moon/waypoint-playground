@@ -26,11 +26,3 @@ make sure that `snap` package manager, `sshpass` and `jq` are installed on host 
 ## references
 
 - https://learn.hashicorp.com/tutorials/waypoint
-
-.PHONY:init
-.SILENT:init
-init:	
-# ifndef LXD
-	# - $(info "'lxd' is not available. installing lxd through snap and configuring the daemon.")
-	- chmod +x contrib/scripts/env-init && contrib/scripts/env-init --lxd-init
-# endif

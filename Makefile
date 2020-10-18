@@ -67,8 +67,7 @@ PDF_TARGETS :=$(sort $(subst /,_,$(patsubst $(DOCS_ROOT)/%.md,pdf_%,$(MARKDOWNS)
 SNAP := $(shell command -v snap 2> /dev/null)
 SSH_PASS := $(shell command -v sshpass 2> /dev/null)
 JQ := $(shell command -v jq 2> /dev/null)
-
-LXD := $(shell command -v blah 2> /dev/null)
+LXD := $(shell command -v lxd 2> /dev/null)
 
 all:
 ifndef SNAP
@@ -83,8 +82,12 @@ endif
 .PHONY:init
 .SILENT:init
 init:	
-	- chmod +x contrib/scripts/env-init && contrib/scripts/env-init --lxd-init
-
+	- chmod +x contrib/scripts/env-init
+ifndef LXD
+	- contrib/scripts/env-init --lxd-init
+endif
+	- contrib/scripts/env-init --container-init '$(CONTAINER_NAME)'
+	- contrib/scripts/env-init --recording-init '$(CONTAINER_NAME)'
 .PHONY: git 
 .SILENT:git 
 git:
