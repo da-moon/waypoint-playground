@@ -176,7 +176,7 @@ cat << EOF | lxc exec "${container_name}" -- bash
 export DEBIAN_FRONTEND=noninteractive; \
 apt-get update && apt-get install -yq ruby ruby-dev gcc && \
 mkdir -p /home/${username}/.gem/bin && \
-echo 'export PATH=\$PATH:~/.gem/bin' >> /home/${username}/.profile && \
+echo 'export PATH=$PATH:~/.gem/bin' >> /home/${username}/.profile && \
 echo 'export GEM_HOME=\$HOME/.gem' >> /home/${username}/.profile && \
 chown "${username}:${username}" /home/${username}/ -R
 EOF
