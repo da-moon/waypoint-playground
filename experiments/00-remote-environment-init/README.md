@@ -61,8 +61,9 @@ sudo apt update && sudo apt install -y neofetch make build-essential git snapd j
 
 now, we will clone this repo and use the `make init` target to initialize lxd. `make init` target uses `contrib/scripts/env-init` for bootstraping and installing needed tools. run `contrib/scripts/env-init --help` to learn more about how the command line interface works.
 
-> Make sure that you have already generated a ssh-key with `ssh-keygen` command before running `make init` target.
-> in case lxd was not installed before running `make init` , the command would fail for the first time. you would have to login by running `newgrp lxd` and then running `make init` again.
+> - Keep in mind that `make init` creates a priviledged lxc container. in case lxd is configured to block priviledge containers ( like in chromeos ), the target will fail.
+> - Make sure that you have already generated a ssh-key with `ssh-keygen` command before running `make init` target.
+> - in case lxd was not installed before running `make init` , the command would fail for the first time. you would have to login by running `newgrp lxd` and then running `make init` again.
 
 ```bash
 git clone https://github.com/da-moon/waypoint-playground

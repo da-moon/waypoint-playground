@@ -8,12 +8,20 @@ To learn about `lxd` and my reasoning for choosing it over other virtualization 
 
 this playground and all associated screencasts are based on Hashicorp's tutorials.
 
+## directory structure
+
+- `contrib` : supporting files and artifacts.
+- `docs` : a summary of different waypoint concepts. can be used as quick start guide.
+- `experiments` : collection of documents with accompanying screencasts, showcasing how to use waypoint.
+- `fixtures` : static files , like mermaid.js graphs
+- `scenes` : yaml files passed to `spielbash` for recording screen casts. 
+
 ## experiments
 
 - initialization - [markdown](experiments/00-remote-environment-init/README.md) | [pdf](experiments/00-remote-environment-init/README.pdf) : covers setting up a remote compute instance in google cloud. we also go through provisioning and installing `lxd` on it, bootstrapping nomad cluster with 3 server and 3 clients in the remote instance's lxd containers and setting up a container for our waypoint experiments.
 - waypoint client setup - [markdown](experiments/01-client-installation/README.md) | [pdf](experiments/01-client-installation/README.pdf) : covers downloading and installing waypoint client
-- waypoint client setup - [markdown](experiments/02-server-installation/README.md) | [pdf](experiments/02-server-installation/README.pdf) : covers setting up waypoint server on nomad cluster
-- waypoint client setup - [markdown](experiments/03-cloud-native-buildpack-deployment/README.md) | [pdf](experiments/03-cloud-native-buildpack-deployment/README.pdf) : covers setting up waypoint server on nomad cluster
+- waypoint server setup - [markdown](experiments/02-server-installation/README.md) | [pdf](experiments/02-server-installation/README.pdf) : covers setting up waypoint server on nomad cluster
+- `pack` build plugin and nomad deploy plugin - [markdown](experiments/03-cloud-native-buildpack-deployment/README.md) | [pdf](experiments/03-cloud-native-buildpack-deployment/README.pdf) : covers building a rails application with cloudnative buildpacks and deployment of the image on nomad cluster
 - 
 
 
