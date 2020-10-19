@@ -1,0 +1,135 @@
+---
+
+title: "04_multistage_dockerfile_deployment"
+options:
+  width: 80
+  height: 24
+  wait: true
+  typing_delay_s: 0.07
+  reading_delay_s: 0.12
+pre-run:
+  - command: clear
+post-run:
+  - delete_env: "exit"
+  - pause: 3
+scenes:
+  - command: neofetch
+  - pause: 5
+  - message: "lets set NOMAD_ADDR env var since 'waypoint up' comand needs it"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "export NOMAD_ADDR=\"http://10.33.235.43:4646\""
+    options:
+      reading_delay_s: 3
+  - message: "in this example , we will build and deploy an echo server written in python"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - message: "the image will be created with a hook before use waypoint's \"docker-pull\" build plugin to inject waypoint entrypoint in it."
+    options:
+      delete: true
+      reading_delay_s: 4
+  - message: "the hook runs a script file which builds a multistage docker image and pushed the image to docker hub"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - message: "keep in mind that you need to store a git token in '~/.git_token' which is what I have already done."
+    options:
+      delete: true
+      reading_delay_s: 4
+  - message: "lets create the directory for our deployment"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "rm -rf /tmp/upstream-gen && mkdir -p /tmp/upstream-gen"
+    options:
+      reading_delay_s: 3
+  - message: "we will move the script hook to target directory"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cp experiments/04-multistage-dockerfile-deployment/build.sh /tmp/upstream-gen/build.sh"
+    options:
+      reading_delay_s: 3
+  - message: "lets make it executable"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "chmod +x /tmp/upstream-gen/build.sh "
+    options:
+      reading_delay_s: 3
+  - message: "lets checkout the content of the script"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cat /tmp/upstream-gen/build.sh"
+    options:
+      reading_delay_s: 3
+  - message: "now, let's copy the multistage docker file"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cp experiments/04-multistage-dockerfile-deployment/Dockerfile /tmp/upstream-gen/Dockerfile"
+    options:
+      reading_delay_s: 3
+  - message: "lets checkout the content of the docker file"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cat /tmp/upstream-gen/Dockerfile"
+    options:
+      reading_delay_s: 3
+  - message: "now, let's copy the waypoint configuration file"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cp experiments/04-multistage-dockerfile-deployment/waypoint.hcl /tmp/upstream-gen/waypoint.hcl"
+    options:
+      reading_delay_s: 3
+  - message: "lets checkout the content of the configuration file"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cat  /tmp/upstream-gen/waypoint.hcl"
+    options:
+      reading_delay_s: 3
+  - command: "pushd /tmp/upstream-gen/"
+    options:
+      reading_delay_s: 3
+  - message: "initilizing project"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "waypoint init"
+    options:
+      reading_delay_s: 3
+  - message: "deploying project"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "waypoint up"
+    options:
+      reading_delay_s: 3
+  - message: "lets checkout nomad deployments again"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "nomad job status waypoint-http-echo-example"
+    options:
+      reading_delay_s: 3
+  - message: "lets checkout waypoint logs"
+    options:
+      delete: true
+      reading_delay_s: 15
+  - command: "waypoint logs"
+    options:
+      reading_delay_s: 10
+  - key : "C-c"
+  - command: "popd"
+    options:
+      reading_delay_s: 3
+  - command : exit
+  - pause: 10
+  - command : sudo chown "$USER:$USER" . -R
+  - command : exit

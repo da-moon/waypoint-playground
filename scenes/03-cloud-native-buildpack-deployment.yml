@@ -1,0 +1,160 @@
+---
+
+title: "03_cloud_native_buildpack_deployment"
+options:
+  width: 80
+  height: 24
+  wait: true
+  typing_delay_s: 0.07
+  reading_delay_s: 0.12
+pre-run:
+  - command: clear
+post-run:
+  - delete_env: "exit"
+  - pause: 3
+scenes:
+  - command: neofetch
+  - pause: 5
+  - message: "lets set NOMAD_ADDR env var since 'waypoint up' comand needs it"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "export NOMAD_ADDR=\"http://10.33.235.43:4646\""
+    options:
+      reading_delay_s: 3
+  - message: "in this demo, we will use waypoint's \"pack\" build plugin to build and deploy a ruby application"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - message: "lets pull 'heroku/buildpacks:18' docker image in advance to speed up build"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "docker pull 'heroku/buildpacks:18'"
+    options:
+      reading_delay_s: 3
+  - command: "docker images"
+    options:
+      reading_delay_s: 3
+  - message: "the ruby app we are making is part of hashicorp's examples repo."
+    options:
+      delete: true
+      reading_delay_s: 4
+  - message: "let's clone the repo"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "rm -rf /tmp/waypoint-examples && git clone https://github.com/hashicorp/waypoint-examples.git /tmp/waypoint-examples"
+    options:
+      reading_delay_s: 3
+  - message: "let's go to the ruby apps main directory"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "pushd /tmp/waypoint-examples/docker/ruby"
+    options:
+      reading_delay_s: 3
+  - command: "ls -lah"
+    options:
+      reading_delay_s: 3
+  - message: "as you can see this repo already has a Procfile"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - message: "procfiles are used to customize cloudnative buildpack piplines"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cat Procfile"
+    options:
+      reading_delay_s: 3
+  - message: "lets also take a look at Rakefile contents"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cat Rakefile"
+    options:
+      reading_delay_s: 3
+  - message: "to make deploying on nomad cluster work , we must modify and overwrite the already existing 'waypoint.hcl'"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - message: "lets take a look at it before modifying it"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cat waypoint.hcl"
+    options:
+      reading_delay_s: 3
+  - message: "lets overwrite the file"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "rm waypoint.hcl && cp ~/waypoint-playground/experiments/03-cloud-native-buildpack-deployment/waypoint.hcl waypoint.hcl"
+    options:
+      reading_delay_s: 3
+  - message: "lets open the file and confirm the overwrite"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "cat waypoint.hcl"
+    options:
+      reading_delay_s: 3
+  - message: "keep in mind that you need a X-Registry-Auth token. The accompanying markdown file shows how to generate one. I have already generated and stored my token in ~/.docker_auth"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - message: "lets confirm nomad allocations"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "nomad job status"
+    options:
+      reading_delay_s: 3
+  - command: "nomad job status waypoint-server"
+    options:
+      reading_delay_s: 3
+  - message: "initilizing project"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "waypoint init"
+    options:
+      reading_delay_s: 3
+  - message: "deploying project"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "waypoint up"
+    options:
+      reading_delay_s: 3
+  - message: "lets checkout nomad deployments again"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "nomad job status"
+    options:
+      reading_delay_s: 3
+  - command: "nomad job status waypoint-server"
+    options:
+      reading_delay_s: 3
+  - command: "nomad job status waypoint-ruby-example"
+    options:
+      reading_delay_s: 3
+  - message: "lets checkout waypoint logs"
+    options:
+      delete: true
+      reading_delay_s: 6
+  - command: "waypoint logs"
+    options:
+      reading_delay_s: 3
+  - pause: 10
+  - key : "C-c"
+  - key : "C-c"
+  - command: "popd"
+    options:
+      reading_delay_s: 3
+  - command : exit
+  - pause: 10
+  - command : sudo chown "$USER:$USER" . -R
+  - command : exit

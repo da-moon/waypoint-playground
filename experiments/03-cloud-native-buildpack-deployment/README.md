@@ -1,3 +1,4 @@
+
 # cloud native buildpack deployment
 
 one way to build project for deploying to nomad with docker builder plugin is to use CloudNative Buildpacks through `pack` builder plugin . by default , nomad uses `heroku/buildpacks:18` image which is based on `ubuntu bionic`. 
@@ -49,50 +50,6 @@ EOF
 waypoint init && \
 NOMAD_ADDR="http://10.33.235.43:4646" waypoint up && \
 popd
-```
-
-```bash
-### terminal ###
-# => lets set NOMAD_ADDR env var since 'waypoint up' comand needs it
-export NOMAD_ADDR="http://10.33.235.43:4646"
-# => in this demo, we will use waypoint's "pack" build plugin to build and deploy a ruby application
-# => lets pull 'heroku/buildpacks:18' docker image in advance to speed up build
-docker pull 'heroku/buildpacks:18'
-docker images
-# => the ruby app we are making is part of hashicorp's examples repo.
-# => let's clone the repo
-rm -rf /tmp/waypoint-examples && git clone https://github.com/hashicorp/waypoint-examples.git /tmp/waypoint-examples
-# => let's go to the ruby apps main directory
-pushd /tmp/waypoint-examples/docker/ruby
-ls -lah
-# => as you can see this repo already has a Procfile
-# => procfiles are used to customize cloudnative buildpack piplines
-cat Procfile
-# => lets also take a look at Rakefile contents
-cat Rakefile
-# => to make deploying on nomad cluster work , we must modify and overwrite the already existing 'waypoint.hcl'
-# => lets take a look at it before modifying it
-cat waypoint.hcl
-# => lets overwrite the file
-rm waypoint.hcl && cp ~/waypoint-playground/experiments/03-cloud-native-buildpack-deployment/waypoint.hcl waypoint.hcl
-# => lets open the file and confirm the overwrite
-cat waypoint.hcl
-# => keep in mind that you need a X-Registry-Auth token. The accompanying markdown file shows how to generate one. I have already generated and stored my token in ~/.docker_auth
-# => lets confirm nomad allocations
-nomad job status
-nomad job status waypoint-server
-# => initilizing project
-waypoint init
-# => deploying project
-waypoint up
-# => lets checkout nomad deployments again
-nomad job status
-nomad job status waypoint-server
-nomad job status waypoint-ruby-example
-# => lets checkout waypoint logs
-waypoint logs
-popd
-### end ###
 ```
 
 ## reference

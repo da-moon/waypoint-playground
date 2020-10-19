@@ -14,7 +14,8 @@ this playground and all associated screencasts are based on Hashicorp's tutorial
 - `docs` : a summary of different waypoint concepts. can be used as quick start guide.
 - `experiments` : collection of documents with accompanying screencasts, showcasing how to use waypoint.
 - `fixtures` : static files , like mermaid.js graphs
-- `scenes` : yaml files passed to `spielbash` for recording screen casts. 
+- `scenes` : yaml files passed to `spielbash` for recording screen casts.
+- in case you just want to watch screencasts, you can find their links at [`experiments/screen-casts.txt`](experiments/screen-casts.txt) 
 
 ## experiments
 
@@ -22,8 +23,7 @@ this playground and all associated screencasts are based on Hashicorp's tutorial
 - waypoint client setup - [markdown](experiments/01-client-installation/README.md) | [pdf](experiments/01-client-installation/README.pdf) : covers downloading and installing waypoint client
 - waypoint server setup - [markdown](experiments/02-server-installation/README.md) | [pdf](experiments/02-server-installation/README.pdf) : covers setting up waypoint server on nomad cluster
 - `pack` build plugin and nomad deploy plugin - [markdown](experiments/03-cloud-native-buildpack-deployment/README.md) | [pdf](experiments/03-cloud-native-buildpack-deployment/README.pdf) : covers building a rails application with cloudnative buildpacks and deployment of the image on nomad cluster
-- 
-
+- multistage docker builder - [markdown](experiments/04-multistage-dockerfile-deploymentt/README.md) | [pdf](experiments/04-multistage-dockerfile-deployment/README.pdf) : covers using hook to build the image and retagging it with `docker-pull`. this experiment has a tight synergy with github actions.
 
 ## references
 

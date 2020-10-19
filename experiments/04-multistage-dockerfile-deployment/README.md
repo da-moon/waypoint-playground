@@ -1,3 +1,4 @@
+
 # multistage dockerfile deployment
 
 as you have already noticed that the docker images built with `pack` plugin are hardly minimal images. I would recommend having a multi-stage builder docker file in which in one stage , application is built and in the second stage, application runs.
@@ -165,41 +166,4 @@ waypoint init && \
 NOMAD_ADDR="http://10.33.235.43:4646" waypoint up
 popd
 rm ~/.git_token
-```
-
-```bash
-### terminal ###
-# => lets set NOMAD_ADDR env var since 'waypoint up' comand needs it
-export NOMAD_ADDR="http://10.33.235.43:4646"
-# => in this example , we will build and deploy an echo server written in python
-# => the image will be created with a hook before use waypoint's "docker-pull" build plugin to inject waypoint entrypoint in it.
-# => the hook runs a script file which builds a multistage docker image and pushed the image to docker hub
-# => keep in mind that you need to store a git token in '~/.git_token' which is what I have already done.
-# => lets create the directory for our deployment
-rm -rf /tmp/upstream-gen && mkdir -p /tmp/upstream-gen
-# => we will move the script hook to target directory
-cp experiments/04-multistage-dockerfile-deployment/build.sh /tmp/upstream-gen/build.sh
-# => lets make it executable
-chmod +x /tmp/upstream-gen/build.sh 
-# => lets checkout the content of the script
-cat /tmp/upstream-gen/build.sh
-# => now, let's copy the multistage docker file
-cp experiments/04-multistage-dockerfile-deployment/Dockerfile /tmp/upstream-gen/Dockerfile
-# => lets checkout the content of the docker file
-cat /tmp/upstream-gen/Dockerfile
-# => now, let's copy the waypoint configuration file
-cp experiments/04-multistage-dockerfile-deployment/waypoint.hcl /tmp/upstream-gen/waypoint.hcl
-# => lets checkout the content of the configuration file
-cat  /tmp/upstream-gen/waypoint.hcl
-pushd /tmp/upstream-gen/
-# => initilizing project
-waypoint init
-# => deploying project
-waypoint up
-# => lets checkout nomad deployments again
-nomad job status waypoint-http-echo-example
-# => lets checkout waypoint logs
-waypoint logs
-popd
-### end ###
 ```
