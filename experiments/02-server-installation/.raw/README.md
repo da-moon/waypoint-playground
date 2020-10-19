@@ -15,8 +15,6 @@ assuming our nomad server's internal IP address (the one assigned by lxd ) is `1
 NOMAD_ADDR="http://10.33.235.43:4646" waypoint install -platform=nomad --nomad-dc=dc1 -accept-tos
 ```
 
-
-
 ```bash
 ### terminal ###
 neofetch
