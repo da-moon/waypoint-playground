@@ -16,3 +16,26 @@ NOMAD_ADDR="http://10.33.235.43:4646" waypoint install -platform=nomad --nomad-d
 ```
 
 
+
+```bash
+### terminal ###
+neofetch
+# => lets set NOMAD_ADDR env var since 'waypoint install' comand needs it
+export NOMAD_ADDR="http://10.33.235.43:4646"
+# => lets store NOMAD_ADDR in '/etc/profile.d/waypoint.sh' so that we won't have to set it in the following ssh logins
+echo NOMAD_ADDR="http://10.33.235.43:4646" | sudo tee /etc/profile.d/waypoint.sh
+# => let's install waypoint server 
+waypoint install -platform=nomad --nomad-dc=dc1 -accept-tos
+# => let's install nomad so that we can use it to check out deployment
+curl -sL https://releases.hashicorp.com/nomad/index.json | \
+jq -r '.versions[].version' | \
+sort -t. -k 1,1n -k 2,2n -k 3,3n -k 4,4n | \
+grep -E -v 'ent|rc|beta' | \
+tail -1 | xargs -n 1 -I {} \
+sudo wget -q -O /usr/local/bin/nomad.zip "https://releases.hashicorp.com/nomad/{}/nomad_{}_linux_amd64.zip" && \
+sudo unzip -q -d /usr/local/bin /usr/local/bin/nomad.zip && \
+sudo rm /usr/local/bin/nomad.zip && \
+nomad version
+nomad job status
+nomad job status waypoint-server
+```
