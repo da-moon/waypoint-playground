@@ -54,3 +54,4 @@ scenes:
       reading_delay_s: 3
   - command : exit
   - pause: 10
+  - command : exit
