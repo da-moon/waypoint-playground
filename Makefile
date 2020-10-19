@@ -148,7 +148,7 @@ pdf:
 .SILENT: $(PDF_TARGETS)
 $(PDF_TARGETS):  
 	- $(eval path=$(subst _,/,$(@:pdf_%=%)))
-	- pandoc $(PWD)/docs/$(path).md -o $(PWD)/docs/$(path).pdf
+	- pandoc $(PWD)/$(DOCS_ROOT)/$(path).md -o $(PWD)/$(DOCS_ROOT)/$(path).pdf
 UPLOAD_TARGETS:= $(CASTS_TARGETS:%=upload_%)
 .PHONY: $(UPLOAD_TARGETS)
 .SILENT: $(UPLOAD_TARGETS)

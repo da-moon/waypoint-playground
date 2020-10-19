@@ -4,3 +4,11 @@
     https://asciinema.org/a/pZygvv9mg5BvtxeVPbSdmjkE0
 - nomad-cluster-playground
     https://asciinema.org/a/Cf9hLwDK0gaaHZ3idfGWnD1YW
+01-waypoint-playground-client-installation
+    https://asciinema.org/a/csFf9UopqJQMgzA17Kp5OZ1e2
+02-waypoint-playground-server-installation
+    https://asciinema.org/a/qZUd2o6iEqL90vw5wxe3ydFoU
+03-waypoint-playground-cloud-native-buildpack-deployment
+    https://asciinema.org/a/BZKgdaqaBExHXq150Y8s7NYvf
+04-waypoint-playground-multistage-dockerfile-deployment
+    https://asciinema.org/a/rI8rkYTyaVl6ltRWqK4i5pEos

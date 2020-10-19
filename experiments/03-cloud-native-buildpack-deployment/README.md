@@ -1,6 +1,8 @@
 
 # cloud native buildpack deployment
 
+[![asciicast](https://asciinema.org/a/BZKgdaqaBExHXq150Y8s7NYvf.svg)](https://asciinema.org/a/BZKgdaqaBExHXq150Y8s7NYvf)
+
 one way to build project for deploying to nomad with docker builder plugin is to use CloudNative Buildpacks through `pack` builder plugin . by default , nomad uses `heroku/buildpacks:18` image which is based on `ubuntu bionic`. 
 
 the main advantage of using cloudnative buildpacks is that these images have withstood the test of time and we know their build pipelines are stable. to customize builds, one must define a [`procfile`](https://devcenter.heroku.com/articles/procfile#procfile-format) and put it in repo's root.

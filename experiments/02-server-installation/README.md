@@ -7,6 +7,8 @@ in this section , we are going to deploy a sample application to nomad cluster. 
 
 ## server installation
 
+[![asciicast](https://asciinema.org/a/qZUd2o6iEqL90vw5wxe3ydFoU.svg)](https://asciinema.org/a/qZUd2o6iEqL90vw5wxe3ydFoU)
+
 to get started with waypoint server , you need to set `NOMAD_ADDR` environment variable so that waypoint knows how to comminucate with nomad.
 To select a single nomad server's IP address. you can either use `lxc ls` to find the ip address or use the following snippet :
 

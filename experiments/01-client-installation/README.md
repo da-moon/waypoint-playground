@@ -1,6 +1,8 @@
 
 # installing Waypoint
 
+[![asciicast](https://asciinema.org/a/csFf9UopqJQMgzA17Kp5OZ1e2.svg)](https://asciinema.org/a/csFf9UopqJQMgzA17Kp5OZ1e2)
+
 Hashicorp [`Waypoint`](https://www.waypointproject.io/downloads) is a statically compiled go application and it can be installed whether through package managers or through downloading and unpacking the binary.
 
 For the sake of universality, we will download and extract the binary rather than using package managers.

@@ -1,6 +1,8 @@
 
 # multistage dockerfile deployment
 
+[![asciicast](https://asciinema.org/a/rI8rkYTyaVl6ltRWqK4i5pEos.svg)](https://asciinema.org/a/rI8rkYTyaVl6ltRWqK4i5pEos)
+
 as you have already noticed that the docker images built with `pack` plugin are hardly minimal images. I would recommend having a multi-stage builder docker file in which in one stage , application is built and in the second stage, application runs.
 
 to make multi-stage builds work, use a `hook` (or github actions pipeline) to build the image first and then use `docker-pull` plugin to add waypoint entrypoint to the image and push it to the artifact repository.
