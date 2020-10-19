@@ -1,7 +1,6 @@
 - waypoint-playground-gcloud-provisioning
     https://asciinema.org/a/KrX3UJtcaeIl4HuLPtLIiRb2G
-
 - waypoint-playground-environment-provisioning
     https://asciinema.org/a/pZygvv9mg5BvtxeVPbSdmjkE0
-
-    
+- nomad-cluster-playground
+    https://asciinema.org/a/Cf9hLwDK0gaaHZ3idfGWnD1YW

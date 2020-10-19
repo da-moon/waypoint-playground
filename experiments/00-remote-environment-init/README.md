@@ -73,6 +73,8 @@ popd
 
 ## nomad playground environment setup
 
+[![asciicast](https://asciinema.org/a/Cf9hLwDK0gaaHZ3idfGWnD1YW.svg)](https://asciinema.org/a/Cf9hLwDK0gaaHZ3idfGWnD1YW)
+
 let's clone [`nomad-cluster-playbook`](https://github.com/da-moon/nomad-cluster-playbook)
 
 ```bash
@@ -82,7 +84,7 @@ git clone https://github.com/da-moon/nomad-cluster-playbook
 before running any targets, we must setup an encryption password for `ansible-vault`. use the following snippet to generate a random password :
 
 ```bash
-head -c16 < /dev/urandom| xxd -p -u | tee ~/.vault_pass.txt
+head -c16 < /dev/urandom| xxd -p -u | tee ~/.vault_pass.txt > /dev/null
 ```
 
 now, lets setup nomad cluster containers 
@@ -97,9 +99,7 @@ lets provision those containers with ansible
 make pre-staging
 ```
 
-## optional : port forwarding
-
-since our compute engine allows incoming connections from public internet, to allow access to nomad api through the internet, we will use ip tables to forward host's port `4646` to a sincle container's port `4646`. the following snippet will do the trick
+- optional : port forwarding : since our compute engine allows incoming connections from public internet, to allow access to nomad api through the internet, we will use ip tables to forward host's port `4646` to a single server container's port `4646`. the following snippet will do the trick
 
 ```bash
 sudo iptables -t nat -A PREROUTING -i $(ip link | awk -F: '$0 !~ "lo|vir|wl|lxd|docker|^[^0-9]"{print $2;getline}') -p tcp --dport 4646 -j DNAT --to "$(lxc list --format json | jq -r '.[] | select((.name | contains ("server")) and (.status=="Running")).state.network.eth0.addresses|.[] | select(.family=="inet").address' | head -n 1):4646"
