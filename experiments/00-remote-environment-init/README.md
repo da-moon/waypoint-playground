@@ -51,14 +51,18 @@ gcloud compute config-ssh
 
 ## environment provisioning 
 
-let's ssh into the remote server and install base dependancies
+[![asciicast](https://asciinema.org/a/pZygvv9mg5BvtxeVPbSdmjkE0.svg)](https://asciinema.org/a/pZygvv9mg5BvtxeVPbSdmjkE0)
+
+let's install base dependencies
 
 ```bash
-ssh waypoint-demo.us-central1-c.playground-259617
 sudo apt update && sudo apt install -y neofetch make build-essential git snapd jq sshpass ansible
 ```
 
-now, we will clone this repo and use the `make init` target to initialize lxd
+now, we will clone this repo and use the `make init` target to initialize lxd. `make init` target uses `contrib/scripts/env-init` for bootstraping and installing needed tools. run `contrib/scripts/env-init --help` to learn more about how the command line interface works.
+
+> Make sure that you have already generated a ssh-key with `ssh-keygen` command before running `make init` target.
+> in case lxd was not installed before running `make init` , the command would fail for the first time. you would have to login by running `newgrp lxd` and then running `make init` again.
 
 ```bash
 git clone https://github.com/da-moon/waypoint-playground

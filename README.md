@@ -8,20 +8,14 @@ To learn about `lxd` and my reasoning for choosing it over other virtualization 
 
 this playground and all associated screencasts are based on Hashicorp's tutorials.
 
-## initialization
+## experiments
 
-Run `make init` to install lxd and initilize container used for our experiments. 
-make sure that `snap` package manager, `sshpass` and `jq` are installed on host machine before running `make init`. make usre that an ssh key is also present on your host before running the target. you can generate ssh key pair by running `ssh-keygen`.
+- initialization - [markdown](experiments/00-remote-environment-init/README.md) | [pdf](experiments/00-remote-environment-init/README.pdf) : covers setting up a remote compute instance in google cloud. we also go through provisioning and installing `lxd` on it, bootstrapping nomad cluster with 3 server and 3 clients in the remote instance's lxd containers and setting up a container for our waypoint experiments.
+- waypoint client setup - [markdown](experiments/01-client-installation/README.md) | [pdf](experiments/01-client-installation/README.pdf) : covers downloading and installing waypoint client
+- waypoint client setup - [markdown](experiments/02-server-installation/README.md) | [pdf](experiments/02-server-installation/README.pdf) : covers setting up waypoint server on nomad cluster
+- waypoint client setup - [markdown](experiments/03-cloud-native-buildpack-deployment/README.md) | [pdf](experiments/03-cloud-native-buildpack-deployment/README.pdf) : covers setting up waypoint server on nomad cluster
+- 
 
-`make init` target uses `contrib/scripts/env-init` for bootstraping and installing needed tools. run `contrib/scripts/env-init --help` to learn more about how the command line interface works.
-
-## bootstrapping nomad cluster
-
-- clone [`nomad-cluster-playbook`](https://github.com/da-moon/nomad-cluster-playbook) and go to it's directory by running `git clone https://github.com/da-moon/nomad-cluster-playbook && pushd nomad-cluster-playbook` 
-- follow the guide in README.md to prepare for deploying and bootstrapping nomad cluster. just to reiterate, make sure `ansible` is installed on your host and you have already generated a password for `ansible-vault` and stored it at `~/.vault_pass.txt`. 
-- initilize nomad server and client containers by running `make -j$(nproc) init`
-- bootstrap nomad client/server with ansible by running `make pre-staging`
-- in case you are running these commands on a remote server, forward all incomming connection at port `4646` to a single nomad server container by running `iptables -t nat -A PREROUTING -i $(ip link | awk -F: '$0 !~ "lo|vir|wl|lxd|docker|^[^0-9]"{print $2;getline}') -p tcp --dport 4646 -j DNAT --to "$(lxc list --format json | jq -r '.[] | select((.name | contains ("server")) and (.status=="Running")).state.network.eth0.addresses|.[] | select(.family=="inet").address' | head -n 1):4646"`. make sure port 4646 is not blocked by cloud providers firewall or any other firewall running on your host.
 
 ## references
 
