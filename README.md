@@ -4,7 +4,7 @@ experiments with hashicorp waypoint and nomad.
 the environment for recording screencasts and experimenting with `waypoint` is based on lxd containers. 
 your host must be a linux machine since we are using [`linux-containers(lxc/lxd)`](https://linuxcontainers.org) for out environment.
 
-To learn about `lxd` and my reasoning for choosing it over other virtualization methods to experiment with nomad and waypoint, look into [lxc-readme] (contrib/lxc/README.md) document.
+To learn about `lxd` and my reasoning for choosing it over other virtualization methods to experiment with nomad and waypoint, look into [lxc-readme](contrib/lxc/README.md) document.
 
 this playground and all associated screencasts are based on Hashicorp's tutorials.
 
