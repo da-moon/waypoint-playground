@@ -101,7 +101,7 @@ options:
   typing_delay_s: 0.07
   reading_delay_s: 0.12
 pre-run:
-  - new_env: "docker run --rm -it -v $PWD:/src:z --workdir /src --name screencasts screencasts:latest bash"
+  - new_env: "docker run -it -v /home/damoo/waypoint-playground/:/src:z --workdir /src --name screencasts screencasts:latest bash || docker start -i screencasts"
     wait_check_cmd: "docker exec phony pgrep -P 1"
   - command: clear
 post-run:
@@ -136,6 +136,8 @@ done < "$codeblock"
   cat <<-EOF >> "${target}"
   - command : exit
   - pause: 10
+  - command : sudo chown "\$USER:\$USER" . -R
+  - command : exit
 EOF
 rm "$codeblock"
 done
@@ -280,6 +282,7 @@ cat <<-EOF >> "${output}"
   - pause: $SECTION_PAUSE
 EOF
 fi
+
   # IFS="$OLDIFS"
 }
 

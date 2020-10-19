@@ -1,0 +1,44 @@
+---
+
+title: "02_server_installation"
+options:
+  width: 80
+  height: 24
+  wait: true
+  typing_delay_s: 0.07
+  reading_delay_s: 0.12
+pre-run:
+  - new_env: "docker run -it -v /home/damoo/waypoint-playground/:/src:z --workdir /src --name screencasts screencasts:latest bash || docker start -i screencasts"
+    wait_check_cmd: "docker exec phony pgrep -P 1"
+  - command: clear
+post-run:
+  - delete_env: "exit"
+  - pause: 3
+scenes:
+  - command: neofetch
+  - pause: 5
+  - message: "lets set NOMAD_ADDR env var since 'waypoint install' comand needs it"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "export NOMAD_ADDR=\"http://10.33.235.43:4646\""
+    options:
+      reading_delay_s: 3
+  - message: "lets store NOMAD_ADDR in '/etc/profile.d/waypoint.sh' so that we won't have to set it in the following ssh logins"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "echo NOMAD_ADDR=\"http://10.33.235.43:4646\" | sudo tee /etc/profile.d/waypoint.sh"
+    options:
+      reading_delay_s: 3
+  - message: "let's install waypoint server "
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "waypoint install -platform=nomad --nomad-dc=dc1 -accept-tos"
+    options:
+      reading_delay_s: 3
+  - command : exit
+  - pause: 10
+  - command : sudo chown "$USER:$USER" . -R
+  - command : exit

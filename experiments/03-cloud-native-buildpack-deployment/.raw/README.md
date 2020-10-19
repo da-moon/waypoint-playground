@@ -54,7 +54,6 @@ popd
 ```bash
 ### terminal ###
 # => sed -e '/^\s\s*$/d' -e "s/\(^.*$\)/echo '\1' | tee -a waypoint.hcl > /dev/null/g"
-neofetch
 # => lets set NOMAD_ADDR env var since 'waypoint up' comand needs it
 export NOMAD_ADDR="http://10.33.235.43:4646"
 # => in this demo, we will use waypoint's "pack" build plugin to build and deploy a ruby application

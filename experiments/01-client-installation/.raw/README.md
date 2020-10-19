@@ -32,7 +32,6 @@ keep in mind the above snippet can also be embedded in a single `RUN` statement 
 
 ```bash
 ### terminal ###
-neofetch
 # => lets make sure that we have our base dependancies (wget,curl,unzip and jq) installed
 sudo apt update && sudo apt install -y curl wget jq unzip
 # => running the following snippet will extract latest version of waypoint and save it at /usr/local/bin/waypoint.zip
