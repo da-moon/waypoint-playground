@@ -1,0 +1,56 @@
+---
+
+title: "01_client_installation"
+options:
+  width: 80
+  height: 24
+  wait: true
+  typing_delay_s: 0.07
+  reading_delay_s: 0.12
+pre-run:
+  - new_env: "docker run --rm -it -v /home/damoo/waypoint-playground/experiments/01-client-installation:/src:z --workdir /src --name screencasts screencasts:latest bash"
+    wait_check_cmd: "docker exec phony pgrep -P 1"
+  - command: clear
+post-run:
+  - delete_env: "exit"
+  - pause: 3
+scenes:
+  - command: neofetch
+  - pause: 5
+  - message: "lets make sure that we have our base dependancies (wget,curl,unzip and jq) installed"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "sudo apk add --no-cache curl wget jq unzip"
+    options:
+      reading_delay_s: 3
+  - message: "running the following snippet will extract latest version of waypoint and save it at /usr/local/bin/waypoint.zip"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "curl -sL https://releases.hashicorp.com/waypoint/index.json | jq -r '.versions[].version' | sort -t. -k 1,1n -k 2,2n -k 3,3n -k 4,4n | grep -E -v 'ent|rc|beta' | tail -1 | xargs -n 1 -I {} sudo wget -q -O /usr/local/bin/waypoint.zip \"https://releases.hashicorp.com/waypoint/{}/waypoint_{}_linux_amd64.zip\" "
+    options:
+      reading_delay_s: 3
+  - message: "extracting the zip file"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "sudo unzip -q -d /usr/local/bin /usr/local/bin/waypoint.zip"
+    options:
+      reading_delay_s: 3
+  - message: "making sure waypoint is available in path"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "waypoint version"
+    options:
+      reading_delay_s: 3
+  - message: "cleaning up"
+    options:
+      delete: true
+      reading_delay_s: 4
+  - command: "sudo rm /usr/local/bin/waypoint.zip"
+    options:
+      reading_delay_s: 3
+  - command : exit
+  - pause: 10

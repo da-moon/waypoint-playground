@@ -122,8 +122,11 @@ release-patch:
 	- git pull
 	- git tag -a v$(PATCHVERSION) -m 'release $(PATCHVERSION)'
 	- git push origin --tags
-
-
+.PHONY: build-image
+.SILENT: build-image
+build-image: 
+	- $(info building screencasts docker image)
+	- docker build -t screencasts:latest contrib/screencasts
 .PHONY: record
 .SILENT: record
 record: 
