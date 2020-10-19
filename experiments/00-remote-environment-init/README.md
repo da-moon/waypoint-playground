@@ -4,7 +4,9 @@
 
 in this section, we are going to provision a fresh debian google compute instance, provision it and install lxd and setup nomad cluster playground on it.
 
-## provisioning infrustructure
+## provisioning infrastructure
+
+[![asciicast](https://asciinema.org/a/KrX3UJtcaeIl4HuLPtLIiRb2G.svg)](https://asciinema.org/a/KrX3UJtcaeIl4HuLPtLIiRb2G)
 
 I am going to use google cloud sdk (`gcloud`) to create a compute engine. feel free to skip this step if you already has a remote server you can ssh into.
 
@@ -16,7 +18,7 @@ gcloud compute instances create "waypoint-demo" \
  --network-tier "PREMIUM" \
  --image "debian-10-buster-v20200521" \
  --image-project "debian-cloud" \
- --boot-disk-size "400GB" \
+ --boot-disk-size "40GB" \
  --boot-disk-type "pd-ssd" \
  --boot-disk-device-name "waypoint-demo"
 ```
