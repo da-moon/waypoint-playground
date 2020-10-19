@@ -70,11 +70,11 @@ JQ := $(shell command -v jq 2> /dev/null)
 LXC := $(shell command -v lxc 2> /dev/null)
 
 all:
-ifndef LXC
-ifndef SNAP
-    $(error "'snap' is not available. please install snap package manager before continuing.")
-endif
-endif
+# ifndef LXC
+# ifndef SNAP
+#     $(error "'snap' is not available. please install snap package manager before continuing.")
+# endif
+# endif
 ifndef SSH_PASS
     $(error "'sshpass' is not available. please install sshpass before continuing.")
 endif
